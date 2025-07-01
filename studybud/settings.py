@@ -111,7 +111,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
+CSRF_TRUSTED_ORIGINS = [
+    "https://localhost:8000",
+    "https://probable-trout-pj9j5q5gg95j3r5gj-8000.app.github.dev",  # Replace with your actual URL
+]
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
