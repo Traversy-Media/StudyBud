@@ -1,0 +1,47 @@
+name: GCP tests
+
+on:
+    pull_request:
+        branches:
+            - master
+
+jobs:
+    run-gcp-tests:
+        runs-on: ubuntu-latest
+
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Install Terraform
+              uses: hashicorp/setup-terraform@v1
+              with:
+                terraform_version: 1.7.5
+            
+            - name: Initialize Terraform
+              env:
+                AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+                AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+              run: terraform -chdir=${GITHUB_WORKSPACE}/terraform init -backend-config="access_key=$AWS_ACCESS_KEY" -backend-config="secret_key=$AWS_SECRET_KEY"
+
+            - name: Check formatting
+              run: terraform -chdir=${GITHUB_WORKSPACE}/terraform fmt -check
+            
+            - name: Check for bugs
+              run: terraform -chdir=${GITHUB_WORKSPACE}/terraform validate
+            
+            - name: Decrypt service account key
+              env:
+                GCP_SERVICE_ACCOUNT_PASSPHRASE: ${{ secrets.GCP_SERVICE_ACCOUNT_PASSPHRASE }}
+              run: |
+                chmod +x ${GITHUB_WORKSPACE}/.github/workflows/shell_scripts/decrypt_service_account.sh
+                bash ${GITHUB_WORKSPACE}/.github/workflows/shell_scripts/decrypt_service_account.sh
+
+            - name: Does your configuration make sense?
+              env:
+                GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+              run: |
+                terraform -chdir=${GITHUB_WORKSPACE}/terraform plan \
+                -var path_to_gcp_service_account="${GITHUB_WORKSPACE}/terraform/key.json" \
+                -var project_id=$GCP_PROJECT_ID

@@ -1,0 +1,24 @@
+name: Perform ZAP baseline scan (Dynamic Application Security Testing)
+
+on:
+    pull_request:
+      branches: ["master"]
+jobs:
+    perform-baseline-scan:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+            
+            - name: Build docker image
+              run: docker build -t chat-room:latest .
+            
+            - name: Run docker image
+              run: docker run -dp 8000:8000 chat-room:latest
+            
+            - name: Set up OWASP ZAP baseline scan
+              uses: zaproxy/action-baseline@v0.12.0
+              with:
+                target: 'http://localhost:8000'
+
+
