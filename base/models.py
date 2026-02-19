@@ -9,7 +9,7 @@ class User(AbstractUser):
 
     avatar = models.ImageField(null=True, default="avatar.svg")
 
-    USERNAME_FIELD = 'email'
+    USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = []
 
 
